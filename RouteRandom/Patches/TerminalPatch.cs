@@ -51,8 +51,6 @@ namespace RouteRandom.Patches
             bool choseRouteRandom = __result.name == routeRandomCompatibleNoun.result.name;
             if (choseRouteRandom || __result.name == routeRandomWithWeatherCompatibleNoun.result.name) {
                 // TODO: DRY this out
-                // TODO: Keyword to allow all weather
-                // TODO: Config for any weather to allow
                 // TODO: Config to remove cost of costly planets
                 // TODO: Config to ignore costly planets
                 // TODO: What if we don't have a moon we can choose randomly?
