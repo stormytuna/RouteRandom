@@ -85,7 +85,7 @@ namespace RouteRandom.Patches
         private static bool WeatherIsAllowed(LevelWeatherType weatherType) {
             switch (weatherType) {
                 case LevelWeatherType.None:
-                    return true; // TODO: Maybe let people filter out None weather for whatever reason they might have
+                    return RouteRandomBase.ConfigAllowMildWeather.Value;
                 case LevelWeatherType.DustClouds:
                     return RouteRandomBase.ConfigAllowDustCloudsWeather.Value;
                 case LevelWeatherType.Rainy:

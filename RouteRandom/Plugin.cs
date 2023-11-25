@@ -17,6 +17,7 @@ namespace RouteRandom
 
         private readonly Harmony harmony = new Harmony(ModGUID);
 
+        public static ConfigEntry<bool> ConfigAllowMildWeather;
         public static ConfigEntry<bool> ConfigAllowDustCloudsWeather;
         public static ConfigEntry<bool> ConfigAllowRainyWeather;
         public static ConfigEntry<bool> ConfigAllowStormyWeather;
@@ -30,6 +31,10 @@ namespace RouteRandom
             }
 
             // TODO: Maybe DRY-ify this?
+            ConfigAllowMildWeather = Config.Bind("Allowed Weathers",
+                                                 "AllowMildWeather",
+                                                 true,
+                                                 "Whether or not to allow the 'Mild' weather to be chosen by the 'route random' command");
             ConfigAllowDustCloudsWeather = Config.Bind("Allowed Weathers",
                                                        "AllowDustCloudsWeather",
                                                        false,
