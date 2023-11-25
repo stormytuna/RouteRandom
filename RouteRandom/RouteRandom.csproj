@@ -48,6 +48,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.Netcode.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="UnityEngine">
       <HintPath>Q:\SteamLibrary\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
@@ -56,9 +57,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\RandomHelper.cs" />
+    <Compile Include="Helpers\TerminalHelper.cs" />
     <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "C:\Users\stormytuna\source\repos\RouteRandom\RouteRandom\bin\Debug\RouteRandom.dll" "Q:\SteamLibrary\steamapps\common\Lethal Company\BepInEx\plugins"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

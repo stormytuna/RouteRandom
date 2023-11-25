@@ -31,6 +31,12 @@ namespace RouteRandom.Patches
             result = new TerminalNode { name = "routeRandomWithWeather" }
         };
 
+        private static readonly TerminalNode noSuitablePlanetsNode = new TerminalNode {
+            name = "NoSuitablePlanets",
+            displayText = "\nNo suitable planets found...\nConsider route randomwithweather.\n\n",
+            clearPreviousText = true
+        };
+
         private static readonly Random rand = new Random();
 
         [HarmonyPostfix, HarmonyPatch("Awake")]
@@ -49,7 +55,6 @@ namespace RouteRandom.Patches
         public static TerminalNode RouteToRandomPlanet(TerminalNode __result, Terminal __instance) {
             bool choseRouteRandom = __result.name == routeRandomCompatibleNoun.result.name;
             if (choseRouteRandom || __result.name == routeRandomWithWeatherCompatibleNoun.result.name) {
-                // TODO: What if we don't have a moon we can choose randomly?
                 // TODO: Add the 'random' and 'randomwithweather' strings to the 'moons' command screen
 
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
@@ -63,6 +68,14 @@ namespace RouteRandom.Patches
                     }
                 }
 
+                RouteRandomBase.Log.LogInfo($"Route Planet Nodes remaining: {routePlanetNodes.Count}");
+
+                // Almost never happens, but sanity check
+                if (routePlanetNodes.Count <= 0) {
+                    RouteRandomBase.Log.LogMessage("Couldn't find a planet with suitable weather!");
+                    return noSuitablePlanetsNode;
+                }
+
                 return rand.NextFromCollection(routePlanetNodes).result;
             }
 
@@ -72,7 +85,7 @@ namespace RouteRandom.Patches
         private static bool WeatherIsAllowed(LevelWeatherType weatherType) {
             switch (weatherType) {
                 case LevelWeatherType.None:
-                    return true;
+                    return true; // TODO: Maybe let people filter out None weather for whatever reason they might have
                 case LevelWeatherType.DustClouds:
                     return RouteRandomBase.ConfigAllowDustCloudsWeather.Value;
                 case LevelWeatherType.Rainy:
