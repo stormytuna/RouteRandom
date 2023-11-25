@@ -31,8 +31,7 @@ namespace RouteRandom.Helpers
 
         public static bool ResultIsAffordable(this CompatibleNoun compatibleNoun) {
             // TODO: Config to remove cost of costly planets
-            // TODO: Config to ignore costly planets
-            return compatibleNoun.result.itemCost <= 0;
+            return compatibleNoun.result.itemCost <= 0 || RouteRandomBase.ConfigAllowCostlyPlanets.Value;
         }
     }
 }
