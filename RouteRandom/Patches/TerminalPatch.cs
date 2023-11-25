@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
+using RouteRandom.Helpers;
 
 namespace RouteRandom.Patches
 {
@@ -37,12 +38,10 @@ namespace RouteRandom.Patches
             try {
                 routeKeyword = __instance.terminalNodes.allKeywords.First(kw => kw.name == "Route");
 
-                __instance.terminalNodes.allKeywords = __instance.terminalNodes.allKeywords.AddRangeToArray(new TerminalKeyword[] { randomKeyword, randomWithWeatherKeyword });
-                routeKeyword.compatibleNouns = routeKeyword.compatibleNouns.AddRangeToArray(new CompatibleNoun[] {
-                    routeRandomCompatibleNoun, routeRandomWithWeatherCompatibleNoun
-                });
+                __instance.AddKeywords(randomKeyword, randomWithWeatherKeyword);
+                __instance.AddCompatibleNounsToKeyword("Route", routeRandomCompatibleNoun, routeRandomWithWeatherCompatibleNoun);
             } catch {
-                RouteRandomBase.Log.LogError("Failed to add 'Random' keyword!");
+                RouteRandomBase.Log.LogError("Failed to add Terminal keywords and compatible nouns!");
             }
         }
 
@@ -50,29 +49,24 @@ namespace RouteRandom.Patches
         public static TerminalNode RouteToRandomPlanet(TerminalNode __result, Terminal __instance) {
             bool choseRouteRandom = __result.name == routeRandomCompatibleNoun.result.name;
             if (choseRouteRandom || __result.name == routeRandomWithWeatherCompatibleNoun.result.name) {
-                // TODO: DRY this out
-                // TODO: Config to remove cost of costly planets
-                // TODO: Config to ignore costly planets
                 // TODO: What if we don't have a moon we can choose randomly?
+                // TODO: Add the 'random' and 'randomwithweather' strings to the 'moons' command screen
 
-                // Seems like all actual moons have buyRerouteToMoon set to -2
-                List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.result.buyRerouteToMoon == -2 && noun.result.itemCost == 0).ToList();
+                List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
 
                 RouteRandomBase.Log.LogInfo(routePlanetNodes);
 
                 if (choseRouteRandom) {
-                    foreach (var routePlanetNode in routePlanetNodes.ToList()) {
+                    foreach (CompatibleNoun routePlanetNode in routePlanetNodes.ToList()) {
                         RouteRandomBase.Log.LogInfo(routePlanetNode.result.name);
-                        var weather = RoutePlanetNameToWeatherType(routePlanetNode.result.name, __instance.moonsCatalogueList);
+                        LevelWeatherType weather = RoutePlanetNameToWeatherType(routePlanetNode.result.name, __instance.moonsCatalogueList);
                         if (!WeatherIsAllowed(weather)) {
                             routePlanetNodes.Remove(routePlanetNode);
                         }
                     }
                 }
 
-                int randomIndex = rand.Next(routePlanetNodes.Count);
-                RouteRandomBase.Log.LogInfo(randomIndex);
-                return routePlanetNodes[randomIndex].result;
+                return rand.NextFromCollection(routePlanetNodes).result;
             }
 
             return __result;
