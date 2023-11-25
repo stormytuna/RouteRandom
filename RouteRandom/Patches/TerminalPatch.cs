@@ -54,11 +54,8 @@ namespace RouteRandom.Patches
 
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
 
-                RouteRandomBase.Log.LogInfo(routePlanetNodes);
-
                 if (choseRouteRandom) {
                     foreach (CompatibleNoun routePlanetNode in routePlanetNodes.ToList()) {
-                        RouteRandomBase.Log.LogInfo(routePlanetNode.result.name);
                         LevelWeatherType weather = RoutePlanetNameToWeatherType(routePlanetNode.result.name, __instance.moonsCatalogueList);
                         if (!WeatherIsAllowed(weather)) {
                             routePlanetNodes.Remove(routePlanetNode);
