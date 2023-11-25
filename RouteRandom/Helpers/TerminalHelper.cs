@@ -6,6 +6,8 @@ namespace RouteRandom.Helpers
 {
     public static class TerminalHelper
     {
+        public static TerminalKeyword GetKeyword(this Terminal terminal, string keywordName) => terminal.terminalNodes.allKeywords.First(kw => kw.name == keywordName); 
+
         public static void AddKeyword(this Terminal terminal, TerminalKeyword newKeyword) => terminal.terminalNodes.allKeywords = terminal.terminalNodes.allKeywords.AddToArray(newKeyword);
 
         public static void AddKeywords(this Terminal terminal, params TerminalKeyword[] newKeywords) {

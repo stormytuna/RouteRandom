@@ -45,7 +45,7 @@ namespace RouteRandom.Patches
         [HarmonyPostfix, HarmonyPatch("Awake")]
         public static void AddNewTerminalWords(Terminal __instance) {
             try {
-                routeKeyword = __instance.terminalNodes.allKeywords.First(kw => kw.name == "Route");
+                routeKeyword = __instance.GetKeyword("Route");
 
                 TerminalNode routeRendNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "85route").result;
                 routeRendNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeRendNode, "85routefree");
@@ -54,19 +54,20 @@ namespace RouteRandom.Patches
                 TerminalNode routeTitanNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "8route").result;
                 routeTitanNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeTitanNode, "8routefree");
 
+                TerminalKeyword moonsKeyword = __instance.GetKeyword("Moons");
+                moonsKeyword.specialKeywordResult.displayText += "* Random   //   Routes you to a random moon\n* RandomWithWeather   //   Routes you to a random moon, regardless of weather conditions\n\n";
+
                 __instance.AddKeywords(randomKeyword, randomWithWeatherKeyword);
                 __instance.AddCompatibleNounsToKeyword("Route", routeRandomCompatibleNoun, routeRandomWithWeatherCompatibleNoun);
             } catch {
                 RouteRandomBase.Log.LogError("Failed to add Terminal keywords and compatible nouns!");
             }
         }
-        
+
         [HarmonyPostfix, HarmonyPatch("ParsePlayerSentence")]
         public static TerminalNode RouteToRandomPlanet(TerminalNode __result, Terminal __instance) {
             bool choseRouteRandom = __result.name == routeRandomCompatibleNoun.result.name;
             if (choseRouteRandom || __result.name == routeRandomWithWeatherCompatibleNoun.result.name) {
-                // TODO: Add the 'random' and 'randomwithweather' strings to the 'moons' command screen
-
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
 
                 if (choseRouteRandom) {
