@@ -36,6 +36,9 @@ namespace RouteRandom.Patches
             displayText = "\nNo suitable planets found...\nConsider route randomwithweather.\n\n",
             clearPreviousText = true
         };
+        private static TerminalNode routeRendNodeFree;
+        private static TerminalNode routeDineNodeFree;
+        private static TerminalNode routeTitanNodeFree;
 
         private static readonly Random rand = new Random();
 
@@ -44,13 +47,20 @@ namespace RouteRandom.Patches
             try {
                 routeKeyword = __instance.terminalNodes.allKeywords.First(kw => kw.name == "Route");
 
+                TerminalNode routeRendNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "85route").result;
+                routeRendNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeRendNode, "85routefree");
+                TerminalNode routeDineNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "7route").result;
+                routeDineNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeDineNode, "7routefree");
+                TerminalNode routeTitanNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "8route").result;
+                routeTitanNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeTitanNode, "8routefree");
+
                 __instance.AddKeywords(randomKeyword, randomWithWeatherKeyword);
                 __instance.AddCompatibleNounsToKeyword("Route", routeRandomCompatibleNoun, routeRandomWithWeatherCompatibleNoun);
             } catch {
                 RouteRandomBase.Log.LogError("Failed to add Terminal keywords and compatible nouns!");
             }
         }
-
+        
         [HarmonyPostfix, HarmonyPatch("ParsePlayerSentence")]
         public static TerminalNode RouteToRandomPlanet(TerminalNode __result, Terminal __instance) {
             bool choseRouteRandom = __result.name == routeRandomCompatibleNoun.result.name;
@@ -68,15 +78,15 @@ namespace RouteRandom.Patches
                     }
                 }
 
-                RouteRandomBase.Log.LogInfo($"Route Planet Nodes remaining: {routePlanetNodes.Count}");
-
                 // Almost never happens, but sanity check
                 if (routePlanetNodes.Count <= 0) {
                     RouteRandomBase.Log.LogMessage("Couldn't find a planet with suitable weather!");
                     return noSuitablePlanetsNode;
                 }
 
-                return rand.NextFromCollection(routePlanetNodes).result;
+                TerminalNode chosenNode = rand.NextFromCollection(routePlanetNodes).result;
+
+                return RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value ? TryGetFreeNodeForCostlyPlanetNode(chosenNode) : chosenNode;
             }
 
             return __result;
@@ -121,6 +131,19 @@ namespace RouteRandom.Patches
                     return moonCatalogue[7].currentWeather;
                 default:
                     return LevelWeatherType.None;
+            }
+        }
+
+        private static TerminalNode TryGetFreeNodeForCostlyPlanetNode(TerminalNode node) {
+            switch (node.name) {
+                case "85route":
+                    return routeRendNodeFree;
+                case "7route":
+                    return routeDineNodeFree;
+                case "8route":
+                    return routeTitanNodeFree;
+                default:
+                    return node;
             }
         }
     }

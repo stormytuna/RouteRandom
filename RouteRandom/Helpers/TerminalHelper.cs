@@ -24,14 +24,22 @@ namespace RouteRandom.Helpers
                 terminal.AddCompatibleNounToKeyword(keywordName, newCompatibleNoun);
             }
         }
-    
-        public static bool ResultIsRealMoon(this CompatibleNoun compatibleNoun) {
-            return compatibleNoun.result.buyRerouteToMoon == -2;
-        }
 
-        public static bool ResultIsAffordable(this CompatibleNoun compatibleNoun) {
-            // TODO: Config to remove cost of costly planets
-            return compatibleNoun.result.itemCost <= 0 || RouteRandomBase.ConfigAllowCostlyPlanets.Value;
+        public static bool ResultIsRealMoon(this CompatibleNoun compatibleNoun) => compatibleNoun.result.buyRerouteToMoon == -2;
+
+        public static bool ResultIsAffordable(this CompatibleNoun compatibleNoun) => compatibleNoun.result.itemCost <= 0 || RouteRandomBase.ConfigAllowCostlyPlanets.Value || RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value;
+
+        public static TerminalNode MakeRouteMoonNodeFree(TerminalNode routeMoonNode, string name) {
+            return new TerminalNode {
+                name = name,
+                buyRerouteToMoon = -2,
+                clearPreviousText = true,
+                displayPlanetInfo = routeMoonNode.displayPlanetInfo,
+                displayText = routeMoonNode.displayText,
+                itemCost = 0,
+                overrideOptions = true,
+                terminalOptions = routeMoonNode.terminalOptions
+            };
         }
     }
 }

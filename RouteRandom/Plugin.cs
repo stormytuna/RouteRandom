@@ -17,7 +17,7 @@ namespace RouteRandom
 
         private readonly Harmony harmony = new Harmony(ModGUID);
 
-        void Awake() {
+        private void Awake() {
             if (Instance is null) {
                 Instance = this;
             }
@@ -39,6 +39,7 @@ namespace RouteRandom
         public static ConfigEntry<bool> ConfigAllowFloodedWeather;
         public static ConfigEntry<bool> ConfigAllowEclipsedWeather;
         public static ConfigEntry<bool> ConfigAllowCostlyPlanets;
+        public static ConfigEntry<bool> ConfigRemoveCostOfCostlyPlanets;
 
         private void LoadConfigs() {
             ConfigAllowMildWeather = Config.Bind("Allowed Weathers",
@@ -76,10 +77,15 @@ namespace RouteRandom
                                                        false,
                                                        "Whether or not to allow the 'Eclipsed' weather to be chosen by the 'route random' command");
 
-            ConfigAllowCostlyPlanets = Config.Bind("General",
+            ConfigAllowCostlyPlanets = Config.Bind("Costly Planets",
                                                    "AllowCostlyPlanets",
                                                    false,
                                                    "Whether or not to allow costly planets (85-Rend, 7-Dine, 8-Titan). NOTE: You will still be prompted to pay the fee to fly there, enable the MakeCostlyPlanetsFree option to avoid that");
+
+            ConfigRemoveCostOfCostlyPlanets = Config.Bind("Costly Planets",
+                                                          "RemoveCostOfCostlyPlanets",
+                                                          false,
+                                                          "Whether or not to remove the cost of costly planets when they're chosen randomly and allows them to be chosen even when AllowCostlyPlanets is false");
         }
 
         #endregion
