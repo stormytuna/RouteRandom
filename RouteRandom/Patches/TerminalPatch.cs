@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using RouteRandom.Helpers;
+using Random = System.Random;
 
 namespace RouteRandom.Patches
 {
@@ -24,11 +24,11 @@ namespace RouteRandom.Patches
 
         private static readonly CompatibleNoun routeRandomCompatibleNoun = new CompatibleNoun {
             noun = randomKeyword,
-            result = new TerminalNode { name = "routeRandom" }
+            result = new TerminalNode { name = "routeRandom", buyRerouteToMoon = -2 }
         };
         private static readonly CompatibleNoun routeRandomWithWeatherCompatibleNoun = new CompatibleNoun {
             noun = randomWithWeatherKeyword,
-            result = new TerminalNode { name = "routeRandomWithWeather" }
+            result = new TerminalNode { name = "routeRandomWithWeather", buyRerouteToMoon = -2 }
         };
 
         private static readonly TerminalNode noSuitablePlanetsNode = new TerminalNode {
@@ -71,13 +71,17 @@ namespace RouteRandom.Patches
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
 
                 if (choseRouteRandom) {
-                    foreach (CompatibleNoun routePlanetNode in routePlanetNodes.ToList()) {
-                        LevelWeatherType weather = RoutePlanetNameToWeatherType(routePlanetNode.result.name, __instance.moonsCatalogueList);
-                        if (!WeatherIsAllowed(weather)) {
-                            routePlanetNodes.Remove(routePlanetNode);
-                        }
-                    }
+                    routePlanetNodes.RemoveAll(rpn => WeatherIsAllowed(RoutePlanetNameToWeatherType(rpn.result.name, __instance.moonsCatalogueList)));
                 }
+
+                // TODO: Remove debug logs
+                RouteRandomBase.Log.LogInfo(routePlanetNodes.Count);
+
+                if (RouteRandomBase.ConfigDifferentPlanetEachTime.Value) {
+                    routePlanetNodes.RemoveAll(rpn => rpn.result.GetNodeAfterConfirmation().NodeRoutesToCurrentOrbitedMoon());
+                }
+
+                RouteRandomBase.Log.LogInfo(routePlanetNodes.Count);
 
                 // Almost never happens, but sanity check
                 if (routePlanetNodes.Count <= 0) {
@@ -91,8 +95,8 @@ namespace RouteRandom.Patches
                 }
 
                 if (RouteRandomBase.ConfigSkipConfirmation.Value) {
-                    CompatibleNoun confirmNoun = chosenNode.terminalOptions.First(cn => cn.noun.name == "Confirm");
-                    return confirmNoun.result;
+                    TerminalNode confirmNode = chosenNode.GetNodeAfterConfirmation();
+                    return confirmNode;
                 }
 
                 return chosenNode;

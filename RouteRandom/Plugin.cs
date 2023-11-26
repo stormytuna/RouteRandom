@@ -41,6 +41,7 @@ namespace RouteRandom
         public static ConfigEntry<bool> ConfigAllowCostlyPlanets;
         public static ConfigEntry<bool> ConfigRemoveCostOfCostlyPlanets;
         public static ConfigEntry<bool> ConfigSkipConfirmation;
+        public static ConfigEntry<bool> ConfigDifferentPlanetEachTime;
 
         private void LoadConfigs() {
             ConfigAllowMildWeather = Config.Bind("Allowed Weathers",
@@ -91,7 +92,12 @@ namespace RouteRandom
             ConfigSkipConfirmation = Config.Bind("General",
                                                  "SkipConfirmation",
                                                  false,
-                                                 "Whether or not to skip the confirmation screen when user either route random command");
+                                                 "Whether or not to skip the confirmation screen when using 'route random' or 'route randomwithweather' commands");
+
+            ConfigDifferentPlanetEachTime = Config.Bind("General",
+                                                "DifferentPlanetEachTime",
+                                                false,
+                                                "Prevents 'route random' and 'route randomwithweather' commands from choosing the same planet you're on");
         }
 
         #endregion

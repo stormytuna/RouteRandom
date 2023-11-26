@@ -8,6 +8,10 @@ namespace RouteRandom.Helpers
     {
         public static TerminalKeyword GetKeyword(this Terminal terminal, string keywordName) => terminal.terminalNodes.allKeywords.First(kw => kw.name == keywordName);
 
+        public static TerminalNode GetNodeAfterConfirmation(this TerminalNode node) => node.terminalOptions.First(cn => cn.noun.name == "Confirm").result;
+
+        public static bool NodeRoutesToCurrentOrbitedMoon(this TerminalNode node) => StartOfRound.Instance.levels[node.buyRerouteToMoon] == StartOfRound.Instance.currentLevel;
+
         public static void AddKeyword(this Terminal terminal, TerminalKeyword newKeyword) => terminal.terminalNodes.allKeywords = terminal.terminalNodes.allKeywords.AddToArray(newKeyword);
 
         public static void AddKeywords(this Terminal terminal, params TerminalKeyword[] newKeywords) {
