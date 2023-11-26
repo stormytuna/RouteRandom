@@ -40,6 +40,7 @@ namespace RouteRandom
         public static ConfigEntry<bool> ConfigAllowEclipsedWeather;
         public static ConfigEntry<bool> ConfigAllowCostlyPlanets;
         public static ConfigEntry<bool> ConfigRemoveCostOfCostlyPlanets;
+        public static ConfigEntry<bool> ConfigSkipConfirmation;
 
         private void LoadConfigs() {
             ConfigAllowMildWeather = Config.Bind("Allowed Weathers",
@@ -86,6 +87,11 @@ namespace RouteRandom
                                                           "RemoveCostOfCostlyPlanets",
                                                           false,
                                                           "Whether or not to remove the cost of costly planets when they're chosen randomly and allows them to be chosen even when AllowCostlyPlanets is false");
+
+            ConfigSkipConfirmation = Config.Bind("General",
+                                                 "SkipConfirmation",
+                                                 false,
+                                                 "Whether or not to skip the confirmation screen when user either route random command");
         }
 
         #endregion

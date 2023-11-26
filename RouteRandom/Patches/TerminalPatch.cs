@@ -86,8 +86,16 @@ namespace RouteRandom.Patches
                 }
 
                 TerminalNode chosenNode = rand.NextFromCollection(routePlanetNodes).result;
+                if (RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value) {
+                    chosenNode = TryGetFreeNodeForCostlyPlanetNode(chosenNode);
+                }
 
-                return RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value ? TryGetFreeNodeForCostlyPlanetNode(chosenNode) : chosenNode;
+                if (RouteRandomBase.ConfigSkipConfirmation.Value) {
+                    CompatibleNoun confirmNoun = chosenNode.terminalOptions.First(cn => cn.noun.name == "Confirm");
+                    return confirmNoun.result;
+                }
+
+                return chosenNode;
             }
 
             return __result;
