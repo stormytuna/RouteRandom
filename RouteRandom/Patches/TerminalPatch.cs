@@ -11,38 +11,26 @@ namespace RouteRandom.Patches
     {
         public static TerminalPatch Instance;
 
-        private static TerminalKeyword routeKeyword;
-
-        private static readonly TerminalKeyword randomKeyword = new TerminalKeyword {
-            word = "random",
-            name = "Random",
-            defaultVerb = routeKeyword
-        };
-        private static readonly TerminalKeyword randomWithWeatherKeyword = new TerminalKeyword {
-            word = "randomwithweather",
-            name = "RandomWithWeather",
-            defaultVerb = routeKeyword
-        };
-
-        private static readonly CompatibleNoun routeRandomCompatibleNoun = new CompatibleNoun {
-            noun = randomKeyword,
-            result = new TerminalNode { name = "routeRandom", buyRerouteToMoon = -2 }
-        };
-        private static readonly CompatibleNoun routeRandomWithWeatherCompatibleNoun = new CompatibleNoun {
-            noun = randomWithWeatherKeyword,
-            result = new TerminalNode { name = "routeRandomWithWeather", buyRerouteToMoon = -2 }
-        };
-
         private static readonly TerminalNode noSuitablePlanetsNode = new TerminalNode {
             name = "NoSuitablePlanets",
-            displayText = "\nNo suitable planets found.\nConsider route randomwithweather.\n\n",
+            displayText = "\nNo suitable planets found.\nConsider route random.\n\n",
             clearPreviousText = true
         };
         private static readonly TerminalNode hidePlanetHackNode = new TerminalNode {
             name = "HidePlanetHack",
             displayText = "\nRouting autopilot to [REDACTED].\nYour new balance is [playerCredits].\n\nPlease enjoy your flight.",
             clearPreviousText = true
+            // buyRerouteToMoon and itemCost fields are set on the fly before returning this node
+            // Least obtrusive way I could find to hide the route chosen but still actually go there
         };
+
+        private static TerminalKeyword routeKeyword;
+
+        private static TerminalKeyword randomKeyword;
+        private static TerminalKeyword randomFilterWeatherKeyword;
+
+        private static CompatibleNoun routeRandomCompatibleNoun;
+        private static CompatibleNoun routeRandomFilterWeatherCompatibleNoun;
 
         private static TerminalNode routeRendNodeFree;
         private static TerminalNode routeDineNodeFree;
@@ -55,6 +43,26 @@ namespace RouteRandom.Patches
             try {
                 routeKeyword = __instance.GetKeyword("Route");
 
+                randomKeyword = new TerminalKeyword {
+                    word = "random",
+                    name = "Random",
+                    defaultVerb = routeKeyword,
+                };
+                randomFilterWeatherKeyword = new TerminalKeyword {
+                    word = "randomfilterweather",
+                    name = "RandomFilterWeather",
+                    defaultVerb = routeKeyword
+                };
+
+                routeRandomCompatibleNoun = new CompatibleNoun {
+                    noun = randomKeyword,
+                    result = new TerminalNode { name = "routeRandom", buyRerouteToMoon = -1 }
+                };
+                routeRandomFilterWeatherCompatibleNoun = new CompatibleNoun {
+                    noun = randomFilterWeatherKeyword,
+                    result = new TerminalNode { name = "routeRandomFilterWeather", buyRerouteToMoon = -1 }
+                };
+
                 TerminalNode routeRendNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "85route").result;
                 routeRendNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeRendNode, "85routefree");
                 TerminalNode routeDineNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "7route").result;
@@ -63,10 +71,10 @@ namespace RouteRandom.Patches
                 routeTitanNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeTitanNode, "8routefree");
 
                 TerminalKeyword moonsKeyword = __instance.GetKeyword("Moons");
-                moonsKeyword.specialKeywordResult.displayText += "* Random   //   Routes you to a random moon\n* RandomWithWeather   //   Routes you to a random moon, regardless of weather conditions\n\n";
+                moonsKeyword.specialKeywordResult.displayText += "* Random   //   Routes you to a random moon, regardless of weather conditions\n* RandomFilterWeather   //   Routes you to a random moon, filtering out disallowed weather conditions\n\n";
 
-                __instance.AddKeywords(randomKeyword, randomWithWeatherKeyword);
-                __instance.AddCompatibleNounsToKeyword("Route", routeRandomCompatibleNoun, routeRandomWithWeatherCompatibleNoun);
+                __instance.AddKeywords(randomKeyword, randomFilterWeatherKeyword);
+                __instance.AddCompatibleNounsToKeyword("Route", routeRandomCompatibleNoun, routeRandomFilterWeatherCompatibleNoun);
             } catch {
                 RouteRandomBase.Log.LogError("Failed to add Terminal keywords and compatible nouns!");
             }
@@ -74,12 +82,18 @@ namespace RouteRandom.Patches
 
         [HarmonyPostfix, HarmonyPatch("ParsePlayerSentence")]
         public static TerminalNode RouteToRandomPlanet(TerminalNode __result, Terminal __instance) {
-            bool choseRouteRandom = __result.name == routeRandomCompatibleNoun.result.name;
-            if (choseRouteRandom || __result.name == routeRandomWithWeatherCompatibleNoun.result.name) {
+            bool choseRouteRandom = __result.name == "routeRandom";
+            bool choseRouteRandomFilterWeather = __result.name == "routeRandomFilterWeather";
+            if (choseRouteRandom || choseRouteRandomFilterWeather) {
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
 
-                if (choseRouteRandom) {
-                    routePlanetNodes.RemoveAll(rpn => WeatherIsAllowed(RoutePlanetNameToWeatherType(rpn.result.name, __instance.moonsCatalogueList)));
+                if (choseRouteRandomFilterWeather) {
+                    foreach(var compatibleNoun in routePlanetNodes.ToList()) {
+                        var weather = RoutePlanetNameToWeatherType(compatibleNoun.result.name, __instance.moonsCatalogueList);
+                        if (!WeatherIsAllowed(weather)) {
+                            routePlanetNodes.Remove(compatibleNoun);
+                        }
+                    }
                 }
 
                 // TODO: Remove debug logs
@@ -98,12 +112,13 @@ namespace RouteRandom.Patches
                 }
 
                 TerminalNode chosenNode = rand.NextFromCollection(routePlanetNodes).result;
+                RouteRandomBase.Log.LogInfo($"Chosen node: {chosenNode.name}");
 
                 if (RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value) {
                     chosenNode = TryGetFreeNodeForCostlyPlanetNode(chosenNode);
                 }
 
-                if (RouteRandomBase.ConfigHidePlanet.Value) {
+                if (RouteRandomBase.ConfigHidePlanet.Value) { 
                     TerminalNode confirmationNode = chosenNode.GetNodeAfterConfirmation();
                     hidePlanetHackNode.buyRerouteToMoon = confirmationNode.buyRerouteToMoon;
                     hidePlanetHackNode.itemCost = RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value ? 0 : confirmationNode.itemCost;

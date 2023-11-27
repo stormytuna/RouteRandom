@@ -48,37 +48,37 @@ namespace RouteRandom
             ConfigAllowMildWeather = Config.Bind("Allowed Weathers",
                                                  "AllowMildWeather",
                                                  true,
-                                                 "Whether or not to allow the 'Mild' weather to be chosen by the 'route random' command");
+                                                 "Whether or not to allow the 'Mild' weather to be chosen by the 'route randomfilterweather' command");
 
             ConfigAllowDustCloudsWeather = Config.Bind("Allowed Weathers",
                                                        "AllowDustCloudsWeather",
                                                        false,
-                                                       "Whether or not to allow the 'Dust Clouds' weather to be chosen by the 'route random' command");
+                                                       "Whether or not to allow the 'Dust Clouds' weather to be chosen by the 'route randomfilterweather' command");
 
             ConfigAllowRainyWeather = Config.Bind("Allowed Weathers",
                                                        "AllowRainyWeather",
                                                        false,
-                                                       "Whether or not to allow the 'Rainy' weather to be chosen by the 'route random' command");
+                                                       "Whether or not to allow the 'Rainy' weather to be chosen by the 'route randomfilterweather' command");
 
             ConfigAllowStormyWeather = Config.Bind("Allowed Weathers",
                                                        "AllowStormyWeather",
                                                        false,
-                                                       "Whether or not to allow the 'Stormy' weather to be chosen by the 'route random' command");
+                                                       "Whether or not to allow the 'Stormy' weather to be chosen by the 'route randomfilterweather' command");
 
             ConfigAllowFoggyWeather = Config.Bind("Allowed Weathers",
                                                        "AllowFoggyWeather",
                                                        false,
-                                                       "Whether or not to allow the 'Foggy' weather to be chosen by the 'route random' command");
+                                                       "Whether or not to allow the 'Foggy' weather to be chosen by the 'route randomfilterweather' command");
 
             ConfigAllowFloodedWeather = Config.Bind("Allowed Weathers",
                                                        "AllowFloodedWeather",
                                                        false,
-                                                       "Whether or not to allow the 'Flooded' weather to be chosen by the 'route random' command");
+                                                       "Whether or not to allow the 'Flooded' weather to be chosen by the 'route randomfilterweather' command");
 
             ConfigAllowEclipsedWeather = Config.Bind("Allowed Weathers",
                                                        "AllowEclipsedWeather",
                                                        false,
-                                                       "Whether or not to allow the 'Eclipsed' weather to be chosen by the 'route random' command");
+                                                       "Whether or not to allow the 'Eclipsed' weather to be chosen by the 'route randomfilterweather' command");
 
             ConfigAllowCostlyPlanets = Config.Bind("Costly Planets",
                                                    "AllowCostlyPlanets",
