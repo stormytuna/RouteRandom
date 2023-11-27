@@ -1,7 +1,7 @@
 {
   "name": "RouteRandom",
-  "version_number": "1.1.0",
+  "version_number": "1.2.0",
   "website_url": "https://github.com/stormytuna/RouteRandom",
-  "description": "Route Random adds a couple commands for routing to a random planet. 'route random' will get a random planet following the allowed weathers in the config. 'route randomwithweather' will ignore the config and allow all weather types",
+  "description": "Route Random adds a couple commands for routing to a random planet. 'route random' will get a random planet. 'route randomfilterweather' will get a random planet, filtering out disallowed weathers",
   "dependencies": []
 }
