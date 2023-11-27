@@ -88,8 +88,8 @@ namespace RouteRandom.Patches
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
 
                 if (choseRouteRandomFilterWeather) {
-                    foreach(var compatibleNoun in routePlanetNodes.ToList()) {
-                        var weather = RoutePlanetNameToWeatherType(compatibleNoun.result.name, __instance.moonsCatalogueList);
+                    foreach (CompatibleNoun compatibleNoun in routePlanetNodes.ToList()) {
+                        LevelWeatherType weather = RoutePlanetNameToWeatherType(compatibleNoun.result.name, __instance.moonsCatalogueList);
                         if (!WeatherIsAllowed(weather)) {
                             routePlanetNodes.Remove(compatibleNoun);
                         }
@@ -118,7 +118,7 @@ namespace RouteRandom.Patches
                     chosenNode = TryGetFreeNodeForCostlyPlanetNode(chosenNode);
                 }
 
-                if (RouteRandomBase.ConfigHidePlanet.Value) { 
+                if (RouteRandomBase.ConfigHidePlanet.Value) {
                     TerminalNode confirmationNode = chosenNode.GetNodeAfterConfirmation();
                     hidePlanetHackNode.buyRerouteToMoon = confirmationNode.buyRerouteToMoon;
                     hidePlanetHackNode.itemCost = RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value ? 0 : confirmationNode.itemCost;
