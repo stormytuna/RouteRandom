@@ -42,6 +42,7 @@ namespace RouteRandom
         public static ConfigEntry<bool> ConfigRemoveCostOfCostlyPlanets;
         public static ConfigEntry<bool> ConfigSkipConfirmation;
         public static ConfigEntry<bool> ConfigDifferentPlanetEachTime;
+        public static ConfigEntry<bool> ConfigHidePlanet;
 
         private void LoadConfigs() {
             ConfigAllowMildWeather = Config.Bind("Allowed Weathers",
@@ -98,6 +99,11 @@ namespace RouteRandom
                                                 "DifferentPlanetEachTime",
                                                 false,
                                                 "Prevents 'route random' and 'route randomwithweather' commands from choosing the same planet you're on");
+
+            ConfigHidePlanet = Config.Bind("General",
+                                           "HidePlanet",
+                                           false,
+                                           "Hides the planet you get randomly routed to, both in the terminal response and at the helm. NOTE: This will ALWAYS hide the orbited planet (even when selected manually) and will skip the confirmation screen");
         }
 
         #endregion

@@ -9,6 +9,8 @@ namespace RouteRandom.Patches
     [HarmonyPatch(typeof(Terminal))]
     public class TerminalPatch
     {
+        public static TerminalPatch Instance;
+
         private static TerminalKeyword routeKeyword;
 
         private static readonly TerminalKeyword randomKeyword = new TerminalKeyword {
@@ -33,9 +35,15 @@ namespace RouteRandom.Patches
 
         private static readonly TerminalNode noSuitablePlanetsNode = new TerminalNode {
             name = "NoSuitablePlanets",
-            displayText = "\nNo suitable planets found...\nConsider route randomwithweather.\n\n",
+            displayText = "\nNo suitable planets found.\nConsider route randomwithweather.\n\n",
             clearPreviousText = true
         };
+        private static readonly TerminalNode hidePlanetHackNode = new TerminalNode {
+            name = "HidePlanetHack",
+            displayText = "\nRouting autopilot to [REDACTED].\nYour new balance is [playerCredits].\n\nPlease enjoy your flight.",
+            clearPreviousText = true
+        };
+
         private static TerminalNode routeRendNodeFree;
         private static TerminalNode routeDineNodeFree;
         private static TerminalNode routeTitanNodeFree;
@@ -90,16 +98,19 @@ namespace RouteRandom.Patches
                 }
 
                 TerminalNode chosenNode = rand.NextFromCollection(routePlanetNodes).result;
+
                 if (RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value) {
                     chosenNode = TryGetFreeNodeForCostlyPlanetNode(chosenNode);
                 }
 
-                if (RouteRandomBase.ConfigSkipConfirmation.Value) {
-                    TerminalNode confirmNode = chosenNode.GetNodeAfterConfirmation();
-                    return confirmNode;
+                if (RouteRandomBase.ConfigHidePlanet.Value) {
+                    TerminalNode confirmationNode = chosenNode.GetNodeAfterConfirmation();
+                    hidePlanetHackNode.buyRerouteToMoon = confirmationNode.buyRerouteToMoon;
+                    hidePlanetHackNode.itemCost = RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value ? 0 : confirmationNode.itemCost;
+                    return hidePlanetHackNode;
                 }
 
-                return chosenNode;
+                return RouteRandomBase.ConfigSkipConfirmation.Value ? chosenNode.GetNodeAfterConfirmation() : chosenNode;
             }
 
             return __result;
