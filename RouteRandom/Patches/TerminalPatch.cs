@@ -87,6 +87,8 @@ namespace RouteRandom.Patches
             if (choseRouteRandom || choseRouteRandomFilterWeather) {
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
 
+                RouteRandomBase.Log.LogDebug($"Num available moons: {routePlanetNodes.Count}");
+
                 if (choseRouteRandomFilterWeather) {
                     foreach (CompatibleNoun compatibleNoun in routePlanetNodes.ToList()) {
                         LevelWeatherType weather = RoutePlanetNameToWeatherType(compatibleNoun.result.name, __instance.moonsCatalogueList);
@@ -94,16 +96,13 @@ namespace RouteRandom.Patches
                             routePlanetNodes.Remove(compatibleNoun);
                         }
                     }
+                    RouteRandomBase.Log.LogDebug($"Num available moons after filtering weather: {routePlanetNodes.Count}");
                 }
-
-                // TODO: Remove debug logs
-                RouteRandomBase.Log.LogInfo(routePlanetNodes.Count);
 
                 if (RouteRandomBase.ConfigDifferentPlanetEachTime.Value) {
                     routePlanetNodes.RemoveAll(rpn => rpn.result.GetNodeAfterConfirmation().NodeRoutesToCurrentOrbitedMoon());
+                    RouteRandomBase.Log.LogDebug($"Num available moons after filtering orbited moon: {routePlanetNodes.Count}");
                 }
-
-                RouteRandomBase.Log.LogInfo(routePlanetNodes.Count);
 
                 // Almost never happens, but sanity check
                 if (routePlanetNodes.Count <= 0) {
@@ -116,9 +115,11 @@ namespace RouteRandom.Patches
 
                 if (RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value) {
                     chosenNode = TryGetFreeNodeForCostlyPlanetNode(chosenNode);
+                    RouteRandomBase.Log.LogDebug("Making node free!");
                 }
 
                 if (RouteRandomBase.ConfigHidePlanet.Value) {
+                    RouteRandomBase.Log.LogDebug("Hiding stuffs >:3");
                     TerminalNode confirmationNode = chosenNode.GetNodeAfterConfirmation();
                     hidePlanetHackNode.buyRerouteToMoon = confirmationNode.buyRerouteToMoon;
                     hidePlanetHackNode.itemCost = RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value ? 0 : confirmationNode.itemCost;
