@@ -22,7 +22,7 @@ namespace RouteRandom
                 Instance = this;
             }
 
-            Log.LogInfo("Route Random has awaken!");
+            Log.LogInfo("Route Random has awoken!");
 
             LoadConfigs();
 
