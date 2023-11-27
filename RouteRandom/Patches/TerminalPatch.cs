@@ -154,6 +154,8 @@ namespace RouteRandom.Patches
 
         private static LevelWeatherType RoutePlanetNameToWeatherType(string routePlanetName, SelectableLevel[] moonCatalogue) {
             switch (routePlanetName) {
+                case "41route":
+                    return moonCatalogue[0].currentWeather;
                 case "220route":
                     return moonCatalogue[1].currentWeather;
                 case "56route":
