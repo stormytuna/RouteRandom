@@ -33,3 +33,6 @@ Changelog:
   - Add config to hide planet
   - Fix Experimentation not obeying weather filters
   - Fix `route random` and `route randomwithweather` commands sometimes not working
+- v1.2.1
+  - Fix an issue with skipping confirmation and removing cost of costly planets, but not hiding planet info
+  - Fix a typo in logged awaken message
