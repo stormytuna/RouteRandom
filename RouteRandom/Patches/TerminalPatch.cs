@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using RouteRandom.Helpers;
@@ -37,6 +38,18 @@ namespace RouteRandom.Patches
         private static TerminalNode routeTitanNodeFree;
 
         private static readonly Random rand = new Random();
+        
+        // .DistinctBy doesnt exist in this c# version :(
+        private class CompatibleNounComparer : EqualityComparer<CompatibleNoun>
+        {
+            public override bool Equals(CompatibleNoun x, CompatibleNoun y) {
+                var ret = x.result.name.Equals(y.result.name, StringComparison.InvariantCultureIgnoreCase);
+                RouteRandomBase.Log.LogInfo($"Comparing {x.result.name} against {y.result.name} - result: {ret}");
+                return ret;
+            }
+            // Not sure why returning obj.GetHashCode() didn't work but this does so...
+            public override int GetHashCode(CompatibleNoun obj) => obj.result.GetHashCode();
+        }
 
         [HarmonyPostfix, HarmonyPatch("Awake")]
         public static void AddNewTerminalWords(Terminal __instance) {
@@ -85,7 +98,8 @@ namespace RouteRandom.Patches
             bool choseRouteRandom = __result.name == "routeRandom";
             bool choseRouteRandomFilterWeather = __result.name == "routeRandomFilterWeather";
             if (choseRouteRandom || choseRouteRandomFilterWeather) {
-                List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).ToList();
+                // .Distinct check here as Dine was registered twice for some reason? Didn't bother looking into why :P
+                List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).Distinct(new CompatibleNounComparer()).ToList();
 
                 RouteRandomBase.Log.LogDebug($"Num available moons: {routePlanetNodes.Count}");
 
@@ -106,7 +120,7 @@ namespace RouteRandom.Patches
 
                 // Almost never happens, but sanity check
                 if (routePlanetNodes.Count <= 0) {
-                    RouteRandomBase.Log.LogMessage("Couldn't find a planet with suitable weather!");
+                    RouteRandomBase.Log.LogInfo("Couldn't find a planet with suitable weather!");
                     return noSuitablePlanetsNode;
                 }
 
