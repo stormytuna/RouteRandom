@@ -36,3 +36,7 @@ Changelog:
 - v1.2.1
   - Fix an issue with skipping confirmation and removing cost of costly planets, but not hiding planet info
   - Fix a typo in logged awaken message
+- v1.2.2
+  - Prevent Company Building from being hidden
+  - Fix video clips still sometimes playing when hiding orbited moon
+  - Fix Dine showing up twice as often as other moons
