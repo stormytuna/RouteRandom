@@ -129,11 +129,11 @@ namespace RouteRandom.Patches
 
                 if (RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value) {
                     chosenNode = TryGetFreeNodeForCostlyPlanetNode(chosenNode);
-                    RouteRandomBase.Log.LogDebug("Making node free!");
+                    RouteRandomBase.Log.LogInfo("Making node free!");
                 }
 
                 if (RouteRandomBase.ConfigHidePlanet.Value) {
-                    RouteRandomBase.Log.LogDebug("Hiding stuffs >:3");
+                    RouteRandomBase.Log.LogInfo("Hiding stuffs >:3");
                     TerminalNode confirmationNode = chosenNode.GetNodeAfterConfirmation();
                     hidePlanetHackNode.buyRerouteToMoon = confirmationNode.buyRerouteToMoon;
                     hidePlanetHackNode.itemCost = RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value ? 0 : confirmationNode.itemCost;
