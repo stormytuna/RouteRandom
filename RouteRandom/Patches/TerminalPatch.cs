@@ -101,7 +101,7 @@ namespace RouteRandom.Patches
                 // .Distinct check here as Dine was registered twice for some reason? Didn't bother looking into why :P
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).Distinct(new CompatibleNounComparer()).ToList();
 
-                RouteRandomBase.Log.LogDebug($"Num available moons: {routePlanetNodes.Count}");
+                RouteRandomBase.Log.LogInfo($"Num available moons: {routePlanetNodes.Count}");
 
                 if (choseRouteRandomFilterWeather) {
                     foreach (CompatibleNoun compatibleNoun in routePlanetNodes.ToList()) {
@@ -110,12 +110,12 @@ namespace RouteRandom.Patches
                             routePlanetNodes.Remove(compatibleNoun);
                         }
                     }
-                    RouteRandomBase.Log.LogDebug($"Num available moons after filtering weather: {routePlanetNodes.Count}");
+                    RouteRandomBase.Log.LogInfo($"Num available moons after filtering weather: {routePlanetNodes.Count}");
                 }
 
                 if (RouteRandomBase.ConfigDifferentPlanetEachTime.Value) {
                     routePlanetNodes.RemoveAll(rpn => rpn.result.GetNodeAfterConfirmation().NodeRoutesToCurrentOrbitedMoon());
-                    RouteRandomBase.Log.LogDebug($"Num available moons after filtering orbited moon: {routePlanetNodes.Count}");
+                    RouteRandomBase.Log.LogInfo($"Num available moons after filtering orbited moon: {routePlanetNodes.Count}");
                 }
 
                 // Almost never happens, but sanity check
