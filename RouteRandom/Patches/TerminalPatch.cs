@@ -89,11 +89,6 @@ namespace RouteRandom.Patches
                 // .Distinct check here as Dine was registered twice for some reason? Didn't bother looking into why :P
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).Distinct(new CompatibleNounComparer()).ToList();
 
-                RouteRandomBase.Log.LogInfo($"Num available moons: {routePlanetNodes.Count}");
-                foreach (var availableMoon in routePlanetNodes) {
-                    RouteRandomBase.Log.LogInfo($"Moon: {availableMoon.result.name}");
-                }
-
                 if (choseRouteRandomFilterWeather) {
                     foreach (CompatibleNoun compatibleNoun in routePlanetNodes.ToList()) {
                         var confirmNode = compatibleNoun.result.GetNodeAfterConfirmation();
@@ -102,38 +97,26 @@ namespace RouteRandom.Patches
                             routePlanetNodes.Remove(compatibleNoun);
                         }
                     }
-                    RouteRandomBase.Log.LogInfo($"Num available moons after filtering weather: {routePlanetNodes.Count}");
-                }
-
-                foreach (var availableMoon in routePlanetNodes) {
-                    RouteRandomBase.Log.LogInfo($"Moon: {availableMoon.result.name}");
                 }
 
                 if (RouteRandomBase.ConfigDifferentPlanetEachTime.Value) {
                     routePlanetNodes.RemoveAll(rpn => rpn.result.GetNodeAfterConfirmation().NodeRoutesToCurrentOrbitedMoon());
-                    RouteRandomBase.Log.LogInfo($"Num available moons after filtering orbited moon: {routePlanetNodes.Count}");
                 }
 
                 // Almost never happens, but sanity check
                 if (routePlanetNodes.Count <= 0) {
-                    RouteRandomBase.Log.LogInfo("Couldn't find a suitable planet!");
                     return noSuitablePlanetsNode;
                 }
 
                 TerminalNode chosenNode = rand.NextFromCollection(routePlanetNodes).result;
-                RouteRandomBase.Log.LogInfo($"Chosen node: {chosenNode.name}");
 
                 if (RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value) {
                     if (TerminalHelper.TryMakeRouteMoonNodeFree(chosenNode, out var freeNode)) {
                         chosenNode = freeNode;
-                        RouteRandomBase.Log.LogInfo("Making node free!");
-                    } else {
-                        RouteRandomBase.Log.LogError("Failed to make moon free!");
                     }
                 }
 
                 if (RouteRandomBase.ConfigHidePlanet.Value) {
-                    RouteRandomBase.Log.LogInfo("Hiding stuffs >:3");
                     TerminalNode confirmationNode = chosenNode.GetNodeAfterConfirmation();
                     hidePlanetHackNode.buyRerouteToMoon = confirmationNode.buyRerouteToMoon;
                     hidePlanetHackNode.itemCost = RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value ? 0 : confirmationNode.itemCost;
