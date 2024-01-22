@@ -14,12 +14,12 @@ namespace RouteRandom.Patches
 
         private static readonly TerminalNode noSuitablePlanetsNode = new TerminalNode {
             name = "NoSuitablePlanets",
-            displayText = "\nNo suitable planets found.\nConsider route random.\n\n",
+            displayText = "\nNo suitable planets found.\nConsider route random.\n\n\n",
             clearPreviousText = true
         };
         private static readonly TerminalNode hidePlanetHackNode = new TerminalNode {
             name = "HidePlanetHack",
-            displayText = "\nRouting autopilot to [REDACTED].\nYour new balance is [playerCredits].\n\nPlease enjoy your flight.",
+            displayText = "\nRouting autopilot to [REDACTED].\nYour new balance is [playerCredits].\n\nPlease enjoy your flight.\n\n\n",
             clearPreviousText = true
             // buyRerouteToMoon and itemCost fields are set on the fly before returning this node
             // Least obtrusive way I could find to hide the route chosen but still actually go there
@@ -33,18 +33,13 @@ namespace RouteRandom.Patches
         private static CompatibleNoun routeRandomCompatibleNoun;
         private static CompatibleNoun routeRandomFilterWeatherCompatibleNoun;
 
-        private static TerminalNode routeRendNodeFree;
-        private static TerminalNode routeDineNodeFree;
-        private static TerminalNode routeTitanNodeFree;
-
         private static readonly Random rand = new Random();
-        
+
         // .DistinctBy doesnt exist in this c# version :(
         private class CompatibleNounComparer : EqualityComparer<CompatibleNoun>
         {
             public override bool Equals(CompatibleNoun x, CompatibleNoun y) {
                 var ret = x.result.name.Equals(y.result.name, StringComparison.InvariantCultureIgnoreCase);
-                RouteRandomBase.Log.LogInfo($"Comparing {x.result.name} against {y.result.name} - result: {ret}");
                 return ret;
             }
             // Not sure why returning obj.GetHashCode() didn't work but this does so...
@@ -76,13 +71,6 @@ namespace RouteRandom.Patches
                     result = new TerminalNode { name = "routeRandomFilterWeather", buyRerouteToMoon = -1 }
                 };
 
-                TerminalNode routeRendNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "85route").result;
-                routeRendNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeRendNode, "85routefree");
-                TerminalNode routeDineNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "7route").result;
-                routeDineNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeDineNode, "7routefree");
-                TerminalNode routeTitanNode = routeKeyword.compatibleNouns.First(cn => cn.result.name == "8route").result;
-                routeTitanNodeFree = TerminalHelper.MakeRouteMoonNodeFree(routeTitanNode, "8routefree");
-
                 TerminalKeyword moonsKeyword = __instance.GetKeyword("Moons");
                 moonsKeyword.specialKeywordResult.displayText += "* Random   //   Routes you to a random moon, regardless of weather conditions\n* RandomFilterWeather   //   Routes you to a random moon, filtering out disallowed weather conditions\n\n";
 
@@ -102,15 +90,23 @@ namespace RouteRandom.Patches
                 List<CompatibleNoun> routePlanetNodes = routeKeyword.compatibleNouns.Where(noun => noun.ResultIsRealMoon() && noun.ResultIsAffordable()).Distinct(new CompatibleNounComparer()).ToList();
 
                 RouteRandomBase.Log.LogInfo($"Num available moons: {routePlanetNodes.Count}");
+                foreach (var availableMoon in routePlanetNodes) {
+                    RouteRandomBase.Log.LogInfo($"Moon: {availableMoon.result.name}");
+                }
 
                 if (choseRouteRandomFilterWeather) {
                     foreach (CompatibleNoun compatibleNoun in routePlanetNodes.ToList()) {
-                        LevelWeatherType weather = RoutePlanetNameToWeatherType(compatibleNoun.result.name, __instance.moonsCatalogueList);
-                        if (!WeatherIsAllowed(weather)) {
+                        var confirmNode = compatibleNoun.result.GetNodeAfterConfirmation();
+                        var moonLevel = StartOfRound.Instance.levels[confirmNode.buyRerouteToMoon];
+                        if (!WeatherIsAllowed(moonLevel.currentWeather)) {
                             routePlanetNodes.Remove(compatibleNoun);
                         }
                     }
                     RouteRandomBase.Log.LogInfo($"Num available moons after filtering weather: {routePlanetNodes.Count}");
+                }
+
+                foreach (var availableMoon in routePlanetNodes) {
+                    RouteRandomBase.Log.LogInfo($"Moon: {availableMoon.result.name}");
                 }
 
                 if (RouteRandomBase.ConfigDifferentPlanetEachTime.Value) {
@@ -120,7 +116,7 @@ namespace RouteRandom.Patches
 
                 // Almost never happens, but sanity check
                 if (routePlanetNodes.Count <= 0) {
-                    RouteRandomBase.Log.LogInfo("Couldn't find a planet with suitable weather!");
+                    RouteRandomBase.Log.LogInfo("Couldn't find a suitable planet!");
                     return noSuitablePlanetsNode;
                 }
 
@@ -128,8 +124,12 @@ namespace RouteRandom.Patches
                 RouteRandomBase.Log.LogInfo($"Chosen node: {chosenNode.name}");
 
                 if (RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value) {
-                    chosenNode = TryGetFreeNodeForCostlyPlanetNode(chosenNode);
-                    RouteRandomBase.Log.LogInfo("Making node free!");
+                    if (TerminalHelper.TryMakeRouteMoonNodeFree(chosenNode, out var freeNode)) {
+                        chosenNode = freeNode;
+                        RouteRandomBase.Log.LogInfo("Making node free!");
+                    } else {
+                        RouteRandomBase.Log.LogError("Failed to make moon free!");
+                    }
                 }
 
                 if (RouteRandomBase.ConfigHidePlanet.Value) {
@@ -164,42 +164,6 @@ namespace RouteRandom.Patches
                     return RouteRandomBase.ConfigAllowEclipsedWeather.Value;
                 default:
                     return false;
-            }
-        }
-
-        private static LevelWeatherType RoutePlanetNameToWeatherType(string routePlanetName, SelectableLevel[] moonCatalogue) {
-            switch (routePlanetName) {
-                case "41route":
-                    return moonCatalogue[0].currentWeather;
-                case "220route":
-                    return moonCatalogue[1].currentWeather;
-                case "56route":
-                    return moonCatalogue[2].currentWeather;
-                case "21route":
-                    return moonCatalogue[3].currentWeather;
-                case "61route":
-                    return moonCatalogue[4].currentWeather;
-                case "85route":
-                    return moonCatalogue[5].currentWeather;
-                case "7route":
-                    return moonCatalogue[6].currentWeather;
-                case "8route":
-                    return moonCatalogue[7].currentWeather;
-                default:
-                    return LevelWeatherType.None;
-            }
-        }
-
-        private static TerminalNode TryGetFreeNodeForCostlyPlanetNode(TerminalNode node) {
-            switch (node.name) {
-                case "85route":
-                    return routeRendNodeFree;
-                case "7route":
-                    return routeDineNodeFree;
-                case "8route":
-                    return routeTitanNodeFree;
-                default:
-                    return node;
             }
         }
     }

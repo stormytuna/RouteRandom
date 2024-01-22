@@ -35,8 +35,13 @@ namespace RouteRandom.Helpers
 
         public static bool ResultIsAffordable(this CompatibleNoun compatibleNoun) => compatibleNoun.result.itemCost <= 0 || RouteRandomBase.ConfigAllowCostlyPlanets.Value || RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value;
 
-        public static TerminalNode MakeRouteMoonNodeFree(TerminalNode routeMoonNode, string name) {
-            var confirmNode = routeMoonNode.terminalOptions[1].result;
+        public static bool TryMakeRouteMoonNodeFree(TerminalNode routeMoonNode, out TerminalNode freeMoonNode) {
+            var confirmNode = routeMoonNode.terminalOptions.FirstOrDefault(node => node.noun.name == "Confirm").result;
+            if (confirmNode == null) {
+                freeMoonNode = null;
+                return false;
+            }
+
             var freeConfirmNode = new TerminalNode {
                 name = $"{confirmNode.name}Free",
                 buyRerouteToMoon = confirmNode.buyRerouteToMoon,
@@ -44,9 +49,9 @@ namespace RouteRandom.Helpers
                 displayText = confirmNode.displayText,
                 itemCost = 0
             };
-            
-            return new TerminalNode {
-                name = name,
+
+            freeMoonNode = new TerminalNode {
+                name = $"{routeMoonNode.name}Free",
                 buyRerouteToMoon = -2,
                 clearPreviousText = true,
                 displayPlanetInfo = routeMoonNode.displayPlanetInfo,
@@ -61,6 +66,7 @@ namespace RouteRandom.Helpers
                     }
                 }
             };
+            return true;
         }
     }
 }
