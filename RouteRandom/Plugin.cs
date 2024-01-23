@@ -10,7 +10,7 @@ namespace RouteRandom
     {
         public const string ModGUID = "stormytuna.RouteRandom";
         public const string ModName = "Route Random";
-        public const string ModVersion = "1.2.1";
+        public const string ModVersion = "1.3.0";
 
         public static ManualLogSource Log = BepInEx.Logging.Logger.CreateLogSource(ModGUID);
         public static RouteRandomBase Instance;
