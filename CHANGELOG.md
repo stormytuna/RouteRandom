@@ -1,3 +1,4 @@
+- v1.3.1: Fixed an issue that broke the terminal when using either command with a specific config setup
 - v1.3.0: Generified some code to allow modded moon support
   - Assumes that modded moons are registered the same way as regular ones (Every moon I have tested with has been thanks to the APIs they use taking this into consideration)
     - If a modded moon doesn't do this for some reason, it won't be randomly chosen by this mod
