@@ -36,17 +36,18 @@ namespace RouteRandom.Helpers
         public static bool ResultIsAffordable(this CompatibleNoun compatibleNoun) => compatibleNoun.result.itemCost <= 0 || RouteRandomBase.ConfigAllowCostlyPlanets.Value || RouteRandomBase.ConfigRemoveCostOfCostlyPlanets.Value;
 
         public static bool TryMakeRouteMoonNodeFree(TerminalNode routeMoonNode, out TerminalNode freeMoonNode) {
-            var confirmNode = routeMoonNode.terminalOptions.FirstOrDefault(node => node.noun.name == "Confirm").result;
-            if (confirmNode == null) {
+            var confirmCompatibleNoun = routeMoonNode.terminalOptions.FirstOrDefault(node => node.noun.name == "Confirm");
+            var denyCompatibleNoun = routeMoonNode.terminalOptions.FirstOrDefault(node => node.noun.name == "Deny");
+            if (confirmCompatibleNoun == null || denyCompatibleNoun == null) {
                 freeMoonNode = null;
                 return false;
             }
 
             var freeConfirmNode = new TerminalNode {
-                name = $"{confirmNode.name}Free",
-                buyRerouteToMoon = confirmNode.buyRerouteToMoon,
+                name = $"{confirmCompatibleNoun.result.name}Free",
+                buyRerouteToMoon = confirmCompatibleNoun.result.buyRerouteToMoon,
                 clearPreviousText = true,
-                displayText = confirmNode.displayText,
+                displayText = confirmCompatibleNoun.result.displayText,
                 itemCost = 0
             };
 
@@ -59,9 +60,9 @@ namespace RouteRandom.Helpers
                 itemCost = 0,
                 overrideOptions = true,
                 terminalOptions = new CompatibleNoun[] {
-                    routeMoonNode.terminalOptions[0],
+                    denyCompatibleNoun,
                     new CompatibleNoun {
-                        noun = new TerminalKeyword { name = "Confirm", isVerb = true },
+                        noun = confirmCompatibleNoun.noun,
                         result = freeConfirmNode
                     }
                 }
