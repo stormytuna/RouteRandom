@@ -10,7 +10,7 @@ public class RouteRandomBase : BaseUnityPlugin
 {
     public const string ModGuid = "stormytuna.RouteRandom";
     public const string ModName = "RouteRandom";
-    public const string ModVersion = "1.3.1";
+    public const string ModVersion = "1.3.2";
 
     public static readonly ManualLogSource Log = BepInEx.Logging.Logger.CreateLogSource(ModGuid);
 
