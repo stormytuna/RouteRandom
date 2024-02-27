@@ -43,26 +43,30 @@ public class TerminalPatch
             randomKeyword = new TerminalKeyword {
                 word = "random",
                 name = "Random",
-                defaultVerb = routeKeyword
+                defaultVerb = routeKeyword,
+                compatibleNouns = Array.Empty<CompatibleNoun>()
             };
             randomFilterWeatherKeyword = new TerminalKeyword {
                 word = "randomfilterweather",
                 name = "RandomFilterWeather",
-                defaultVerb = routeKeyword
+                defaultVerb = routeKeyword,
+                compatibleNouns = Array.Empty<CompatibleNoun>()
             };
 
             routeRandomCompatibleNoun = new CompatibleNoun {
                 noun = randomKeyword,
                 result = new TerminalNode {
                     name = "routeRandom",
-                    buyRerouteToMoon = -1
+                    buyRerouteToMoon = -1,
+                    terminalOptions = Array.Empty<CompatibleNoun>()
                 }
             };
             routeRandomFilterWeatherCompatibleNoun = new CompatibleNoun {
                 noun = randomFilterWeatherKeyword,
                 result = new TerminalNode {
                     name = "routeRandomFilterWeather",
-                    buyRerouteToMoon = -1
+                    buyRerouteToMoon = -1,
+                    terminalOptions = Array.Empty<CompatibleNoun>()
                 }
             };
 
