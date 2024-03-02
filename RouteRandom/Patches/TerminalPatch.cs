@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BepInEx;
 using HarmonyLib;
 using RouteRandom.Helpers;
+using RouteRandom;
 using Random = System.Random;
 
 namespace RouteRandom.Patches;
@@ -39,20 +41,38 @@ public class TerminalPatch
     public static void AddNewTerminalWords(Terminal __instance) {
         try {
             routeKeyword = __instance.GetKeyword("Route");
-
-            randomKeyword = new TerminalKeyword {
-                word = "random",
-                name = "Random",
-                defaultVerb = routeKeyword,
-                compatibleNouns = Array.Empty<CompatibleNoun>()
-            };
-            randomFilterWeatherKeyword = new TerminalKeyword {
-                word = "randomfilterweather",
-                name = "RandomFilterWeather",
-                defaultVerb = routeKeyword,
-                compatibleNouns = Array.Empty<CompatibleNoun>()
-            };
-
+            if (!RouteRandomBase.ConfigAlternateCommands.Value) 
+            { 
+                randomKeyword = new TerminalKeyword {
+                    word = "random",
+                    name = "Random",
+                    defaultVerb = routeKeyword,
+                    compatibleNouns = Array.Empty<CompatibleNoun>()
+                };
+                randomFilterWeatherKeyword = new TerminalKeyword {
+                    word = "randomfilterweather",
+                    name = "RandomFilterWeather",
+                    defaultVerb = routeKeyword,
+                    compatibleNouns = Array.Empty<CompatibleNoun>()
+                };
+            }
+            else 
+            {
+                randomKeyword = new TerminalKeyword
+                {
+                    word = "randomignoreconfig",
+                    name = "Random",
+                    defaultVerb = routeKeyword,
+                    compatibleNouns = Array.Empty<CompatibleNoun>()
+                };
+                randomFilterWeatherKeyword = new TerminalKeyword
+                {
+                    word = "random",
+                    name = "RandomFilterWeather",
+                    defaultVerb = routeKeyword,
+                    compatibleNouns = Array.Empty<CompatibleNoun>()
+                };
+            }
             routeRandomCompatibleNoun = new CompatibleNoun {
                 noun = randomKeyword,
                 result = new TerminalNode {
@@ -71,9 +91,16 @@ public class TerminalPatch
             };
 
             TerminalKeyword moonsKeyword = __instance.GetKeyword("Moons");
-            moonsKeyword.specialKeywordResult.displayText +=
-                "* Random   //   Routes you to a random moon, regardless of weather conditions\n* RandomFilterWeather   //   Routes you to a random moon, filtering out disallowed weather conditions\n\n";
-
+            if (!RouteRandomBase.ConfigAlternateCommands.Value)
+            {
+                moonsKeyword.specialKeywordResult.displayText +=
+                    "* Random   //   Routes you to a random moon, regardless of weather conditions\n* RandomFilterWeather   //   Routes you to a random moon, filtering out disallowed weather conditions\n\n";
+            }
+            else
+            {
+                moonsKeyword.specialKeywordResult.displayText +=
+                    "* RandomIgnoreConfig   //   Routes you to a random moon, regardless of weather conditions\n* Random   //   Routes you to a random moon, filtering out disallowed weather conditions\n\n";
+            }
             __instance.AddKeywords(randomKeyword, randomFilterWeatherKeyword);
             __instance.AddCompatibleNounsToKeyword("Route", routeRandomCompatibleNoun, routeRandomFilterWeatherCompatibleNoun);
         } catch (Exception e) {
