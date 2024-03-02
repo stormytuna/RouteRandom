@@ -4,7 +4,6 @@ using System.Linq;
 using BepInEx;
 using HarmonyLib;
 using RouteRandom.Helpers;
-using RouteRandom;
 using Random = System.Random;
 
 namespace RouteRandom.Patches;
