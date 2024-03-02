@@ -10,7 +10,7 @@ public class RouteRandomBase : BaseUnityPlugin
 {
     public const string ModGuid = "stormytuna.RouteRandom";
     public const string ModName = "RouteRandom";
-    public const string ModVersion = "1.3.2";
+    public const string ModVersion = "1.3.3";
 
     public static readonly ManualLogSource Log = BepInEx.Logging.Logger.CreateLogSource(ModGuid);
 
@@ -38,6 +38,7 @@ public class RouteRandomBase : BaseUnityPlugin
     public static ConfigEntry<bool> ConfigSkipConfirmation;
     public static ConfigEntry<bool> ConfigDifferentPlanetEachTime;
     public static ConfigEntry<bool> ConfigHidePlanet;
+    public static ConfigEntry<bool> ConfigAlternateCommands;
 
     private void LoadConfigs() {
         ConfigAllowMildWeather = Config.Bind("Allowed Weathers",
@@ -99,6 +100,11 @@ public class RouteRandomBase : BaseUnityPlugin
             "HidePlanet",
             false,
             "Hides the planet you get randomly routed to, both in the terminal response and at the helm. NOTE: This will ALWAYS hide the orbited planet (even when selected manually) and will skip the confirmation screen");
+
+        ConfigAlternateCommands = Config.Bind("Alternate Commands",
+            "AlternateCommands",
+            false,
+            "Alternates the commands so that:\nRoute Random = Route RandomIgnoreConfig\nRoute RandomFilterWeather = Route Random");
     }
 
     #endregion
